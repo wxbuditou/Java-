@@ -1,0 +1,9 @@
+package cn.it.cast.Dao;
+
+
+
+public class StudentDao extends FunctionDao{
+
+
+
+}

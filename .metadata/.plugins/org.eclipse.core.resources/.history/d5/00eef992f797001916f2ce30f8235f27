@@ -1,0 +1,106 @@
+package cn.it.cast.Service;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import cn.it.cast.Dao.StudentDao;
+import cn.it.cast.function.Comment;
+import cn.it.cast.function.Document;
+import cn.it.cast.function.Message;
+import cn.it.cast.function.News;
+import cn.it.cast.function.Video;
+import cn.it.cast.utils.PageModel;
+
+public class StudentService {
+
+	
+	public PageModel findNewsWithPage(int num) throws SQLException {
+		int currentPagenum = num;
+		int pageSize = 5;
+		StudentDao studentDao = new StudentDao();
+		int totalRecord = studentDao.getNewsNumber();
+		List<News> list = studentDao.getNewsObject(5*(num-1),5);
+		System.out.println("list length is" + list.size());
+		PageModel pModel = new PageModel(currentPagenum, pageSize, totalRecord);
+		pModel.setList(list);
+		//前台通过url构造对象
+		pModel.setUrl("Student/StudentServlet?method=scan_news");//设置url，通过pagemodel的属性构造url
+		return pModel;
+	}
+
+
+	public PageModel findVideoWithPage(int num) throws SQLException {
+		int currentPagenum = num;
+		int pageSize = 5;
+		StudentDao studentDao = new StudentDao();
+		int totalRecord = studentDao.getVideoNumber();
+		List<Video> list = studentDao.getVideoObject(5*(num-1),5);
+		PageModel pModel = new PageModel(currentPagenum, pageSize, totalRecord);
+		pModel.setList(list);
+		pModel.setUrl("/Student/StudentServlet?method=scan_video");
+		return pModel;
+	}
+
+
+	public PageModel findDocumentWithPage(int num) throws SQLException {
+		int currentPagenum = num;
+		int pageSize = 5;
+		StudentDao studentDao = new StudentDao();
+		int totalRecord = studentDao.getDocumentNumber();
+		List<Document> list = studentDao.getDocumentObject(5*(num-1),5);
+		PageModel pModel = new PageModel(currentPagenum, pageSize, totalRecord);
+		pModel.setList(list);
+		pModel.setUrl("/Student/StudentServlet?method=scan_document");
+		return pModel;
+	}
+
+
+	public News show_news(String news_id) throws SQLException {
+		StudentDao studentDao = new StudentDao();
+		return studentDao.show_news(news_id);
+	}
+
+
+	public Document download_document(String document_id) throws SQLException {
+		StudentDao studentDao = new StudentDao();
+		return studentDao.download_document(document_id);
+	}
+
+
+	public Video show_video(String video_id) throws SQLException {
+		StudentDao studentDao = new StudentDao();
+		return studentDao.show_video(video_id);
+	}
+
+
+	public void publish_message(String topic, String content,String uploaduser, String uploadnumber) throws SQLException {
+		StudentDao studentDao = new StudentDao();
+		studentDao.publish_message(topic , content , uploaduser ,uploadnumber);
+	}
+
+
+	public PageModel findMessageWithPage(int num) throws SQLException {
+		int currentPagenum = num;
+		int pageSize = 5;
+		StudentDao studentDao = new StudentDao();
+		int totalRecord = studentDao.getMessageNumber();
+		List<Message> list = studentDao.getMessageObject(5*(num-1),5);
+		PageModel pModel = new PageModel(currentPagenum, pageSize, totalRecord);
+		pModel.setList(list);
+		pModel.setUrl("/Student/StudentServlet?method=scan_Message");
+		return pModel;
+	}
+
+
+	public Message show_message(String message_id) throws SQLException {
+		StudentDao studentDao = new StudentDao();
+		return studentDao.show_message(message_id);
+	}
+
+
+	public List<Comment> getCommentByid(String message_id) throws SQLException {
+		StudentDao studentDao = new StudentDao();
+		return studentDao.getCommentByid(message_id);
+	}
+
+}

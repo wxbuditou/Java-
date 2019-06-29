@@ -1,0 +1,84 @@
+package cn.it.cast.Servlet;
+
+import java.io.IOException;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.PageContext;
+import javax.websocket.Session;
+
+import org.apache.commons.dbutils.handlers.BeanHandler;
+
+import cn.it.cast.Dao.UserDao;
+import cn.it.cast.Service.UserService;
+import cn.it.cast.domain.Admin;
+import cn.it.cast.student.Student;
+import cn.it.cast.teacher.Teacher;
+
+
+public class UserServlet extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public UserServlet() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doPost(request, response);
+	}
+
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String username = request.getParameter("username");
+		String password = request.getParameter("password");
+		String position = request.getParameter("position");
+		String code = request.getParameter("code");
+		String randcode = (String) request.getSession().getAttribute("check_code");
+		System.out.println("username: "+username+" password: "+password+" position: "+position+" code :"+code);
+
+		if (code.equals(randcode)) {
+			UserService userService = new UserService();
+			Object object=null;
+			try {
+				object = userService.validate(username,password,position);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (object==null) {
+				response.getWriter().println("用户名不存在，请重新登陆！！！<a href=\"index.jsp\">点击链接</a>");
+			}else {
+				if (position.equals("student")) {	//学生登录
+					Student student = (Student)object;
+					request.setAttribute("student", student);
+					response.sendRedirect("");//重定向到学生模块
+				}else if (position.equals("teacher")) {	//教师登录
+					Teacher teacher = (Teacher)object;
+					request.setAttribute("teacher", teacher);
+					response.sendRedirect("");//重定向到教师模块
+				}else if (position.equals("adminstrator")) {	//管理员登陆
+					Admin admin = (Admin)object;
+					request.setAttribute("admin", admin);
+					response.sendRedirect("");//重定向到管理员模块
+				}
+			}
+		}else {
+			response.getWriter().println("验证码错误，请重新登陆！！！<a href=\"index.jsp\">点击链接</a>");
+		}
+		
+	}
+	
+	
+	
+
+}

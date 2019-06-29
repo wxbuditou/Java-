@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="tk.eclipse.plugin.jseditor.launch.JavaScriptLaunchConfigurationType">
+<stringAttribute key="javascript.file" value="D:\eclipse\workspace\kechengsheji\Project\WebContent\login.jsp"/>
+<listAttribute key="javascript.includes"/>
+</launchConfiguration>

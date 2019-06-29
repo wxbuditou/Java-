@@ -1,0 +1,96 @@
+package cn.it.cast.Servlet;
+
+import java.awt.List;
+import java.io.IOException;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import cn.it.cast.Service.StudentService;
+import cn.it.cast.Service.TeacherService;
+import cn.it.cast.function.Document;
+import cn.it.cast.function.News;
+import cn.it.cast.function.Video;
+import cn.it.cast.utils.PageModel;
+
+
+public class StudentServlet extends StudentBaseServlet {
+	public String scan_news(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		//获取news对象存在pagemodel的list中，然后再传到前台
+		System.out.println("scan_news...");
+		int num =  Integer.parseInt(request.getParameter("num"));
+		StudentService studentService = new StudentService();
+		PageModel pModel = studentService.findNewsWithPage(num);
+		request.setAttribute("page", pModel);
+		return "/Student/student_news.jsp";
+	}
+	
+	public String scan_video(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		//获取video对象存在pagemodel的list中
+		System.out.println("scan_video...");
+		int num =  Integer.parseInt(request.getParameter("num"));
+		StudentService studentService = new StudentService();
+		PageModel pModel = studentService.findVideoWithPage(num);
+		request.setAttribute("page", pModel);
+		//将pagemodel对象传到前台
+		return "/Student/student_video.jsp";
+	}
+	
+	public String scan_document(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		//获取document对象存在pagemodel的list中
+		System.out.println("scan_document...");
+		int num =  Integer.parseInt(request.getParameter("num"));
+		StudentService studentService = new StudentService();
+		PageModel pModel = studentService.findDocumentWithPage(num);
+		request.setAttribute("page", pModel);
+		return "/Student/student_document.jsp";
+	}
+	/*
+	public String scan_video(HttpServletRequest request,HttpServletResponse response) {
+		return "video";
+	}
+*/
+	public String show_news(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		String news_id = request.getParameter("news_id");
+		StudentService studentService = new StudentService();
+		News news = studentService.show_news(news_id);//返回新闻对象
+		request.setAttribute("news", news);
+		return "/Student/student_show_news.jsp";
+	}
+	
+	public String download_document(HttpServletRequest request,HttpServletResponse response) throws SQLException, IOException {
+		String document_id = request.getParameter("document_id");
+		System.out.println("document_id is "+document_id);
+		StudentService studentService = new StudentService();
+		Document document = studentService.download_document(document_id);//返回视频对象
+		System.out.println(document.toString());
+		response.setHeader("Content-disposition","attachment;filename="+document.getDocument_attachment());
+		//response.sendRedirect("TeacherServlet?method=scan_document&num=1");
+		return "StudentServlet?method=scan_document&num=1";
+	}
+	
+	//播放视频
+	public String show_video(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		String video_id = request.getParameter("video_id");
+		System.out.println("video_id is "+video_id);
+		StudentService studentService = new StudentService();
+		Video video = studentService.show_video(video_id);//返回视频对象
+		System.out.println(video.toString());
+		request.setAttribute("video", video);
+		return "/Student/student_show_video.jsp";
+	}
+	
+
+	public String student_logout(HttpServletRequest request,HttpServletResponse response) {
+		request.getSession().removeAttribute("student");
+		request.getSession().removeAttribute("msg");
+		//request.setAttribute("", arg1);
+		return "/Student/student_home.jsp";
+	}
+	
+	
+}

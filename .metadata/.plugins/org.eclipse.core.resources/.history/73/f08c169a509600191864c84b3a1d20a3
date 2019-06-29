@@ -1,0 +1,97 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%
+String path = request.getContextPath();
+String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+String randcode = (String)session.getAttribute("check_code");
+String obj =(String)session.getAttribute("msg");
+%>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>登陆</title>
+</head>
+
+<script type="text/javascript" src="<%=path %>/js/jquery-3.3.1.min.js"></script>
+
+<script type="text/javascript">
+/*
+	$(function(){
+		$("#username").blur(function(){
+			var un = $("#username").val();
+			var username = $.trim(un);
+			var add = $("#ad").val();
+			var ad = $.trim(add);
+			alert(ad);
+			if (username!=null&&username!=""){
+				$.post("UserServlet",{"method":"valideUserExist","username":username,"ad":ad},function(data){
+					
+					if (data=="no"){
+						var rs = $("#result");
+						rs.html("用户名不存在！");
+					}
+				});//发送数据到服务器进行异步校验
+				
+			}else{
+				alert("请输入学号");
+			}
+		})
+		
+	});*/
+	//验证码不同步，session中永远慢一步，后台校验验证码
+	function judge(){
+		var un = $("#username").val();
+		var username=$.trim(un);
+		var add = $("#ad").val();
+		var ad = $.trim(add);
+		var pd = $("#password").val();
+		var password = $.trim(pd);
+		var cd = $("#code").val();
+		var code=$.trim(cd);
+		var rc = $("#hiddencode").val();
+		if (username==null||username==""){
+			alert("请输入用户名");
+			return;
+		}
+		if (password==null||password==""){
+			alert("请输入密码！");
+			return;
+		}
+		if (code==null||code==""){
+			alert("请输入验证码！");
+			return;
+		}
+		$("#fm").submit();
+	}
+	
+</script>
+
+<body>
+<div><span id="result" style="color:red">
+
+<c:if test="${not empty obj}">
+	<%= request.getSession().getAttribute("msg")%>
+</c:if>
+
+</span></div>
+<form action="UserServlet" method="post" id="fm">
+	用户名：<input type="text" name="username" id="username"> 
+	<select name="position">
+		<option value="student" selected="selected">学生</option>
+		<option value="teacher" >教师</option>
+		<option value="adminstrator">管理员</option> 
+	</select>
+	<br>
+	密&nbsp;&nbsp;&nbsp;&nbsp;码：<input type="password" name="password" id="password">
+	<br>
+	验证码：<input type="text" name="code" id="code">
+	<img src="servlet/CheckCodeServlet"><br>
+	<input type="reset" value="重置">
+	<input type="button" value="提交" onclick="judge();">
+</form>
+
+</body>
+</html>

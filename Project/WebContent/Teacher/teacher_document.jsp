@@ -1,0 +1,123 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>查看文档</title>
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/jquery-3.3.1.min.js"></script>
+<link rel="stylesheet" href="../css/layout.css" type="text/css">
+<style type="text/css">
+body {
+	font: 100%/1.4 Verdana, Arial, Helvetica, sans-serif;
+	margin: 0;
+	padding: 0;
+	color: #000;
+	background-image:url(../Image/login_bgx.gif);
+}
+</style>
+
+<script type="text/javascript">
+
+	function logout(){
+		
+		var del = confirm("你确定要注销吗？")
+		if (del==true){
+			location.href="TeacherServlet?method=teacher_logout";
+		}
+	}
+
+</script>
+
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <!-- end .header --></div>
+  <div class="sidebar1">
+    <ul class="nav">
+      <li><a href="TeacherServlet?method=scan_news&num=1">教学公告</a></li>
+      <li><a href="TeacherServlet?method=scan_video&num=1">教学视频</a></li>
+      <li><a href="TeacherServlet?method=scan_document&num=1">试题下载</a></li>
+      <li><a href="TeacherServlet?method=scan_message&num=1">师生交流</a></li>
+    </ul>
+    
+    <!-- end .sidebar1 --></div>
+  <div class="content">
+    <table width="764" border="0">
+       <tr>
+        <td width="758" height="42"><div class="userinfo">
+          <table width="758" border="0">
+            <tr>
+              <td height="37">欢迎你：${sessionScope.teacher.teacher_username }</td>
+              <td>工号：${sessionScope.teacher.teacher_number }</td>
+              <td>上一次在线时间：${sessionScope.teacher.teacher_onlinetime}</td>
+              <td><button id="logout" onclick="logout();">注销</button></td>
+            </tr>
+          </table>
+        </div>
+        </td>
+      </tr>
+     
+     <tr>
+     <td>
+    <div class="document_num">
+    <table width="750" border="0">
+    <tr bgcolor="#E6E6FA">
+      <td><a href="teacher_publish_news.jsp">发布公告</a></td>
+      <td><a href="teacher_publish_video.jsp">发布视频</a></td>	
+      <td><a href="teacher_publish_document.jsp">发布文档</a></td>
+      <td><a href="#">回复答疑</a></td>
+   </tr>
+   </table>
+   </div>
+   </td>
+   
+   <tr>
+     <td>
+    <div class="document_num">
+    <table width="750" border="0" cellpadding="10" cellspacing="1" class="document">
+    <tr>
+    <c:forEach items="${page.list}" var="document" varStatus="idStatus">
+     <tr>		
+      <td>${idStatus.count}</td>
+      <td><a href="${pageContext.request.contextPath }/Teacher/TeacherServlet?method=download_document&document_id=${document.document_id}">${document.document_name}</a></td>	
+      <c:if test="${document.document_character==0 }">
+      <td>[老师]${document.document_uploaduser}</td>
+      </c:if>
+      <c:if test="${document.document_character==1 }">
+      <td>[管理员]${document.document_uploaduser}</td>
+      </c:if>
+      <td>${document.document_uploadtime}</td>
+      <td>下载量:${document.document_downloadnum}</td>
+    </tr>
+    </c:forEach>
+   </tr>
+  </table>
+  </div>
+  <span style="text-align:center;display:block;" >
+  <!-- 发送到分页servlet，将返回video类信息存储到list中，传递到前台 -->
+  共${page.totalPageNum}页/第${page.currentPageNum }页 
+  <a href="${pageContext.request.contextPath }/${page.url}&num=1">首页</a>
+  <a href="${pageContext.request.contextPath }/${page.url}&num=${page.prevPageNum}">上一页</a>
+  
+  
+  <c:forEach begin="${page.startPage }" end="${page.endPage }" var = "i">
+<a href="${pageContext.request.contextPath }/${page.url}&num=${i}">${i}</a>
+</c:forEach>
+
+<a href="${pageContext.request.contextPath }/${page.url}&num=${page.nextPageNum}">下一页</a>
+<a href="${pageContext.request.contextPath }/${page.url}&num=${page.endPage}">末页</a>
+  </span>
+     </td>
+     </tr>
+    </table>
+  </div>
+  <div class="footer" style="text-align:center ; display:blocked;">
+    <p >copyright@wx工作室，版权所有，侵权必究。</p>
+  <!-- end .footer --></div>
+  <!-- end .container --></div>
+</body>
+</html>

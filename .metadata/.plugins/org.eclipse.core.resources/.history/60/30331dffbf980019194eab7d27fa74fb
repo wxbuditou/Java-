@@ -1,0 +1,332 @@
+package cn.it.cast.Servlet;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+import com.mchange.v3.filecache.FileCacheKey;
+
+import cn.it.cast.Service.StudentService;
+import cn.it.cast.Service.TeacherService;
+import cn.it.cast.function.Comment;
+import cn.it.cast.function.Document;
+import cn.it.cast.function.Message;
+import cn.it.cast.function.News;
+import cn.it.cast.function.Video;
+import cn.it.cast.student.Student;
+import cn.it.cast.teacher.Teacher;
+import cn.it.cast.utils.FileType;
+import cn.it.cast.utils.PageModel;
+import cn.it.cast.utils.RanNum;
+
+
+public class TeacherServlet extends TeacherBaseServlet {
+	public String scan_news(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		//获取news对象存在pagemodel的list中，然后再传到前台
+		System.out.println("scan_news...");
+		int num =  Integer.parseInt(request.getParameter("num"));
+		TeacherService teacherService = new TeacherService();
+		PageModel pModel = teacherService.findNewsWithPage(num);
+		request.setAttribute("page", pModel);
+		return "/Teacher/teacher_news.jsp";
+	}
+	
+	public String scan_video(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		//获取video对象存在pagemodel的list中
+		System.out.println("scan_video...");
+		int num =  Integer.parseInt(request.getParameter("num"));
+		TeacherService teacherService = new TeacherService();
+		PageModel pModel = teacherService.findVideoWithPage(num);
+		request.setAttribute("page", pModel);
+		//将pagemodel对象传到前台
+		return "/Teacher/teacher_video.jsp";
+	}
+	
+	public String scan_document(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		//获取document对象存在pagemodel的list中
+		System.out.println("scan_document...");
+		int num =  Integer.parseInt(request.getParameter("num"));
+		TeacherService teacherService = new TeacherService();
+		PageModel pModel = teacherService.findDocumentWithPage(num);
+		request.setAttribute("page", pModel);
+		return "/Teacher/teacher_document.jsp";
+	}
+	
+	public String scan_message(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		//获取document对象存在pagemodel的list中
+		System.out.println("scan_message...");
+		int num =  Integer.parseInt(request.getParameter("num"));
+		TeacherService teacherService = new TeacherService();
+		PageModel pModel = teacherService.findMessageWithPage(num);
+		request.setAttribute("page", pModel);
+		return "/Teacher/teacher_message.jsp";
+	}
+	
+	public String show_message(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		//获取文章id
+		//通过文章id获取内容，输出内容
+		//根据id在comment表查找评论。按时间评论全部输出来，返回一个comment的list
+		String message_id = request.getParameter("message_id");
+		System.out.println("message_id is "+message_id);
+		TeacherService teacherService = new TeacherService();
+		Message message = teacherService.show_message(message_id);//返回文章对象
+		List<Comment> comments = teacherService.getCommentByid(message_id);
+		System.out.println(message.toString());
+		request.setAttribute("message", message);
+		//comments = null;
+		request.setAttribute("comments", comments);
+		return "/Teacher/teacher_show_message.jsp";
+	}
+    
+	public String publish_news(HttpServletRequest request,HttpServletResponse response) throws SQLException, UnsupportedEncodingException {
+		int character = 0;
+		String path="";
+		String tc = request.getParameter("topic");
+		String topic = new String(tc.getBytes("ISO8859-1"),"UTF-8");
+		Teacher teacher = (Teacher)request.getSession().getAttribute("teacher");
+		String name = teacher.getTeacher_username();
+		String number = teacher.getTeacher_number();
+		String ct = request.getParameter("editorValue");
+		String content = new String(ct.getBytes("ISO8859-1"), "UTF-8");
+		System.out.println("topic: "+ topic +" number: "+ number+ " content: "+content);
+		if (content!=null) {
+			TeacherService teacherService = new TeacherService();
+			teacherService.publish_news(number,topic,content,character,name);
+			path="TeacherServlet?method=scan_news&num=1";
+		}else {
+			//
+		}
+		System.out.println("publish_news  path:"+path);
+		return path;
+	}
+	
+	public String show_news(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		String news_id = request.getParameter("news_id");
+		TeacherService teacherService = new TeacherService();
+		News news = teacherService.show_news(news_id);//返回新闻对象
+		request.setAttribute("news", news);
+		return "/Teacher/teacher_show_news.jsp";
+	}
+	
+	public String publish_video(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		response.setCharacterEncoding("utf-8");
+		response.setContentType("text/html;charset=utf-8");
+		Map<String, String> map = new HashMap<String,String>();
+		DiskFileItemFactory factory  = new DiskFileItemFactory();
+		factory.setSizeThreshold(1024*1024*200);//设置最大大小为200M
+		ServletFileUpload upload = new ServletFileUpload(factory);
+		upload.setHeaderEncoding("utf-8");
+		try {
+			List<FileItem> list = upload.parseRequest(request);
+			Teacher teacher = (Teacher)request.getSession().getAttribute("teacher");
+			String uploaduser = teacher.getTeacher_number();//上传教师的number
+			String character = "0";//标识为教师上传
+			map.put("video_uploaduser", uploaduser);
+			map.put("video_character", character);
+			for (FileItem item:list) {
+				if (item.isFormField()) {
+				//普通项，获取name和对应的内容
+				String key = item.getFieldName();
+				String value = item.getString("utf-8");
+				System.out.println("key: "+key + "  value: "+value);
+				map.put(key, value);
+				}else {
+					//上传项，在服务端指定目录/upload创建一个文件
+					//将上传项中文件的二进制数据输出到创建好的文件中
+					
+					String fName = item.getName();
+					//String fName = new String(fn.getBytes("gbk"),"UTF-8");
+					System.out.println("上传过来时的 文件名：" + fName);
+					//获取服务端upload的真实路径
+					//判断文件类型，是否为video文件
+					String type = FileType.Type(fName);
+					System.out.println("type is "+ type);
+					map.put("video_oldattachment", fName);
+					if (type.equals("video")) {
+						String realPath = "D:\\eclipse\\workspace\\kechengsheji\\Project\\WebContent\\upload\\video";
+						String video_id = RanNum.get24UUID();//生成video的id标识
+						String video_attachment = RanNum.get8UUID()+"."+FileType.fileType(fName);
+						String video_savepath = "upload/video";
+						map.put("video_id", video_id);	//传入视频id
+						map.put("video_attachment", video_attachment);	//传入存储的tomcat的文件名称
+						map.put("video_savepath", video_savepath);
+						System.out.println("realpath is "+ realPath);
+						//File file = new File
+						File file = new File(realPath,video_attachment);
+						if (!file.exists()) {
+							file.createNewFile();
+							System.out.println("创建文件成功。。。");
+						}
+						item.write(file);
+					}else {
+						//输出视频文件不匹配
+						request.setAttribute("msg", "上传文件非视频文件");
+					}
+				}
+			}
+			TeacherService teacherService = new TeacherService();
+			teacherService.publish_video(map);
+			System.out.println("map :" +map);
+			response.sendRedirect("TeacherServlet?method=scan_video&num=1");//转到显示video界面
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	public String show_video(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		String video_id = request.getParameter("video_id");
+		System.out.println("video_id is "+video_id);
+		TeacherService teacherService = new TeacherService();
+		Video video = teacherService.show_video(video_id);//返回视频对象
+		System.out.println(video.toString());
+		request.setAttribute("video", video);
+		return "/Teacher/teacher_show_video.jsp";
+	}
+	
+	public String publish_document(HttpServletRequest request,HttpServletResponse response) throws SQLException {
+		response.setCharacterEncoding("utf-8");
+		response.setContentType("text/html;charset=utf-8");
+		Map<String, String> map = new HashMap<String,String>();
+		DiskFileItemFactory factory  = new DiskFileItemFactory();
+		factory.setSizeThreshold(1024*1024*200);//设置最大大小为200M
+		ServletFileUpload upload = new ServletFileUpload(factory);
+		upload.setHeaderEncoding("utf-8");
+		try {
+			List<FileItem> list = upload.parseRequest(request);
+			Teacher teacher = (Teacher)request.getSession().getAttribute("teacher");
+			String uploaduser = teacher.getTeacher_number();//上传教师的number
+			String character = "0";//标识为教师上传
+			map.put("document_uploaduser", uploaduser);
+			map.put("document_character", character);
+			for (FileItem item:list) {
+				if (item.isFormField()) {
+				//普通项，获取name和对应的内容
+				String key = item.getFieldName();
+				String value = item.getString("utf-8");
+				System.out.println("key: "+key + "  value: "+value);
+				map.put(key, value);
+				}else {
+					//上传项，在服务端指定目录/upload创建一个文件
+					//将上传项中文件的二进制数据输出到创建好的文件中
+					
+					String fName = item.getName();
+					//String fName = new String(fn.getBytes("gbk"),"UTF-8");
+					System.out.println("上传过来时的 文件名：" + fName);
+					//获取服务端upload的真实路径
+					//判断文件类型，是否为video文件
+					String type = FileType.Type(fName);
+					System.out.println("type is "+ type);
+					map.put("document_oldattachment", fName);
+					if (type.equals("document")) {
+						String realPath = "D:\\eclipse\\workspace\\kechengsheji\\Project\\WebContent\\upload\\document";
+						String document_id = RanNum.get24UUID();//生成video的id标识
+						String document_attachment = RanNum.get8UUID()+"."+FileType.fileType(fName);
+						String document_savepath = "upload/document";
+						map.put("document_id", document_id);	//传入视频id
+						map.put("document_attachment", document_attachment);	//传入存储的tomcat的文件名称
+						map.put("document_savepath", document_savepath);
+						System.out.println("realpath is "+ realPath);
+						//File file = new File
+						File file = new File(realPath,document_attachment);
+						if (!file.exists()) {
+							file.createNewFile();
+							System.out.println("创建文件成功。。。");
+						}
+						item.write(file);
+					}else {
+						//输出视频文件不匹配
+						request.setAttribute("msg", "上传文件非视频文件");
+					}
+				}
+			}
+			TeacherService teacherService = new TeacherService();
+			teacherService.publish_document(map);
+			System.out.println("map :" +map);
+			response.sendRedirect("TeacherServlet?method=scan_document&num=1");//转到显示document界面
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	public String download_document(HttpServletRequest request,HttpServletResponse response) throws SQLException, IOException {
+		String document_id = request.getParameter("document_id");
+		String realPath = "D:\\eclipse\\workspace\\kechengsheji\\Project\\WebContent\\upload\\document";
+		System.out.println("document_id is "+document_id);
+		TeacherService teacherService = new TeacherService();
+		Document document = teacherService.download_document(document_id);//返回视频对象
+		System.out.println(document.toString());
+		realPath = realPath  + "/"+document.getDocument_attachment();
+		System.out.println("document realpath is "+realPath);
+		response.setHeader("Content-disposition","attachment;filename="+document.getDocument_attachment());
+		//****************
+		InputStream  inputStream = null;
+		OutputStream outputStream = null;
+		try {
+			inputStream = new FileInputStream(realPath);
+			int len=0;
+			byte buf[] = new byte[1024];
+			outputStream = response.getOutputStream();
+			while ((len=inputStream.read(buf)) >0 ) {
+				outputStream.write(buf,0,len);
+			}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			if (inputStream!=null) {
+				inputStream.close();
+			}
+			if (outputStream!=null) {
+				outputStream.close();
+			}
+			}
+		//response.sendRedirect("TeacherServlet?method=scan_document&num=1");
+		return "null";
+	}
+	
+	public String publish_comment(HttpServletRequest request,HttpServletResponse response) throws SQLException, IOException {
+		Teacher teacher = (Teacher)request.getSession().getAttribute("teacher");
+		int comment_character = 0;
+		String comment_username = teacher.getTeacher_username();
+		String comment_usernumber = teacher.getTeacher_number();
+		String comment_content = request.getParameter("comment_content");
+		String comment_messageid = request.getParameter("message_id");
+		System.out.println("comment_content is "+comment_content + " comment_messageid is "+ comment_messageid);
+		if (comment_content!=null||comment_content!="") {
+		TeacherService teacherService = new TeacherService();
+		teacherService.publish_comment(comment_username,comment_usernumber,comment_content,comment_messageid,comment_character);
+		}
+		//return "StudentServlet?method=show_message&message_id="+comment_messageid;
+		response.sendRedirect("TeacherServlet?method=show_message&message_id="+comment_messageid);
+		return null;
+	}
+	
+	public String teacher_logout(HttpServletRequest request,HttpServletResponse response) {
+		request.getSession().removeAttribute("teacher");
+		request.getSession().removeAttribute("msg");
+		//request.setAttribute("", arg1);
+		return "/Teacher/teacher_home.jsp";
+	}
+
+}

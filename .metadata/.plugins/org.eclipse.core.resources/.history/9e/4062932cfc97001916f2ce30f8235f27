@@ -1,0 +1,218 @@
+package cn.it.cast.Dao;
+
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+
+import javax.security.auth.message.callback.PrivateKeyCallback.Request;
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
+
+import cn.it.cast.DB.DBConnection;
+import cn.it.cast.function.Comment;
+import cn.it.cast.function.Document;
+import cn.it.cast.function.Message;
+import cn.it.cast.function.News;
+import cn.it.cast.function.Video;
+import cn.it.cast.utils.RanNum;
+
+public class FunctionDao {
+	
+	public int getNewsNumber() throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "select count(*) from table_news";
+		Number cnt = (Number) queryRunner.query(sql, new ScalarHandler());
+		return cnt.intValue();
+	}
+
+	public List<News> getNewsObject(int i, int j) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "select * from table_news order by news_uploadtime desc  LIMIT ? , ?";
+		return queryRunner.query(sql, new BeanListHandler<News>(News.class),i,j);
+	}
+
+	public List<Video> getVideoObject(int i, int j) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "select * from table_video order by video_uploadtime desc  LIMIT ? , ?";
+		return queryRunner.query(sql, new BeanListHandler<Video>(Video.class),i,j);
+	}
+
+	public List<Document> getDocumentObject(int i, int j) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "select * from table_document order by document_uploadtime desc LIMIT ? , ?";
+		return queryRunner.query(sql, new BeanListHandler<Document>(Document.class),i,j);
+	}
+	
+
+	public List<Message> getMessageObject(int i, int j) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "select * from table_message order by message_uploadtime desc LIMIT ? , ?";
+		return queryRunner.query(sql, new BeanListHandler<Message>(Message.class),i,j);
+	}
+
+
+	public int getVideoNumber() throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "select count(*) from table_video";
+		Number cnt = (Number) queryRunner.query(sql, new ScalarHandler());
+		return cnt.intValue();
+	}
+
+	public int getDocumentNumber() throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "select count(*) from table_document";
+		Number cnt = (Number) queryRunner.query(sql, new ScalarHandler());
+		return cnt.intValue();
+	}
+	
+	public int getMessageNumber() throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "select count(*) from table_message";
+		Number cnt = (Number) queryRunner.query(sql, new ScalarHandler());
+		return cnt.intValue();
+	}
+
+	public void publish_news(String number, String topic, String content, int character) throws SQLException {
+		QueryRunner queryRunner =new QueryRunner(DBConnection.getDataSource());
+		String sql = "insert into table_news value(null,?,?,?,?,?,?,?)";
+		String uploaduser = number;			//上传用户
+		String id = RanNum.get24UUID();	//随机生成字符串作为主键
+		Date date = new Date();			//characte为0时标识教师，为1时标识管理员
+		Timestamp uploadtime = new Timestamp(date.getTime()); //发布时间
+		int clicknum=0;
+		System.out.println("id:"+id+" topic:"+topic+" content:"+content+" uploadtime:"+uploadtime+" uploaduser:"+uploaduser);
+		Object[] params = {id,topic,content,uploadtime,uploaduser,clicknum,character};
+		queryRunner.update(sql,params);
+	}
+
+	public News show_news(String news_id) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "update table_news set news_clicknum=news_clicknum+1 where news_id =?";
+		queryRunner.update(sql,news_id);
+		sql = "select * from table_news where news_id = ?";
+		return queryRunner.query(sql, new BeanHandler<News>(News.class),news_id);
+	}
+
+	//delete_news
+	public void delete_news(String news_id) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql="delete from table_news where news_id = ?";
+		queryRunner.update(sql,news_id);
+	}
+	
+	//上传视频
+	public void publish_video(Map<String, String> map) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String video_id = map.get("video_id");
+		String video_name = map.get("video_name");
+		String video_oldattachment = map.get("video_oldattachment");
+		String video_attachment = map.get("video_attachment");
+		String video_savepath = map.get("video_savepath");
+		Date date = new Date();			//characte为0时标识教师，为1时标识管理员
+		Timestamp uploadtime = new Timestamp(date.getTime()); //发布时间
+		String video_uploaduser = map.get("video_uploaduser");
+		String video_pro = map.get("video_pro");
+		int video_character = Integer.parseInt(map.get("video_character"));
+		int video_playnum = 0;
+		Object[] params = {video_id,video_name,video_oldattachment,video_attachment,uploadtime,video_uploaduser,video_pro,video_character,video_playnum,video_savepath};
+		String sql = "insert into table_video value(null,?,?,?,?,?,?,?,?,?,?)";
+		queryRunner.update(sql, params);
+	}
+	
+	public Video show_video(String video_id) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "update table_video set video_playnum=video_playnum+1 where video_id =?";
+		queryRunner.update(sql,video_id);
+		sql = "select * from table_video where video_id = ?";
+		return queryRunner.query(sql, new BeanHandler<Video>(Video.class),video_id);
+	}
+	
+	public Message show_message(String message_id) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "update table_message set message_clicknum=message_clicknum+1 where message_id =?";
+		queryRunner.update(sql,message_id);
+		sql = "select * from table_message where message_id = ?";
+		return queryRunner.query(sql, new BeanHandler<Message>(Message.class),message_id);
+	}
+	
+	//上传文档
+	public void publish_document(Map<String, String> map) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String document_id = map.get("document_id");
+		String document_name = map.get("document_name");
+		String document_oldattachment = map.get("document_oldattachment");
+		String document_attachment = map.get("document_attachment");
+		String document_savepath = map.get("document_savepath");
+		Date date = new Date();			//characte为0时标识教师，为1时标识管理员
+		Timestamp uploadtime = new Timestamp(date.getTime()); //发布时间
+		String document_uploaduser = map.get("document_uploaduser");
+		String document_pro = map.get("document_pro");
+		int document_character = Integer.parseInt(map.get("document_character"));
+		int document_downloadnum = 0;
+		Object[] params = {document_id,document_name,document_oldattachment,document_attachment,uploadtime,document_uploaduser,document_pro,document_character,document_downloadnum,document_savepath};
+		String sql = "insert into table_document value(null,?,?,?,?,?,?,?,?,?,?)";
+		queryRunner.update(sql, params);
+	}
+	
+	public Document download_document(String document_id) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "update table_document set document_downloadnum=document_downloadnum+1 where document_id =?";
+		queryRunner.update(sql,document_id);
+		sql = "select * from table_document where document_id = ?";
+		return queryRunner.query(sql, new BeanHandler<Document>(Document.class),document_id);
+	}
+	
+	public void delete_video(String video_id) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "delete from table_video where video_id = ?";
+		queryRunner.update(sql,video_id);
+	}
+	
+	public void delete_document(String document_id) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "delete from table_document where document_id = ?";
+		queryRunner.update(sql,document_id);
+	}
+	
+	public void publish_message(String topic, String content, String uploaduser, String uploadnumber) throws SQLException {
+		String message_id = RanNum.get24UUID();
+		String message_topic = topic;
+		String message_content = content;
+		Date date = new Date();			
+		Timestamp uploadtime = new Timestamp(date.getTime());
+		String message_uploaduser = uploaduser;
+		String message_uploadnumber = uploadnumber;
+		int message_character = 3;
+		int message_clicknum = 0;
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql="insert into table_message value(null,?,?,?,?,?,?,?,?)";
+		Object[] params = {message_id , message_topic,message_content,uploadtime,message_uploaduser,message_uploadnumber,message_character,message_clicknum};
+		queryRunner.update(sql,params);
+	}
+	
+	public List<Comment> getCommentByid(String message_id) throws SQLException {
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "select * from table_comment where comment_messageid = ? order by message_uploadtime desc";
+		return queryRunner.query(sql, new BeanListHandler<Comment>(Comment.class),message_id);
+	}
+	
+	public void publish_comment(String comment_username, String comment_usernumber, String comment_content,
+			String comment_messageid) throws SQLException {
+		String comment_id = RanNum.get24UUID();
+		Date date = new Date();			
+		Timestamp uploadtime = new Timestamp(date.getTime());
+		int comment_character = 3;
+		QueryRunner queryRunner = new QueryRunner(DBConnection.getDataSource());
+		String sql = "insert into table table_comment value(null , ?,?,?,?,?,?,?)";
+		Object[] params = {comment_id,comment_username,comment_usernumber,comment_content,uploadtime,comment_messageid,comment_character};
+		queryRunner.update(sql,params);
+	}
+	
+}

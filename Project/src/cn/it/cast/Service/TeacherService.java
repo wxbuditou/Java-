@@ -1,0 +1,119 @@
+package cn.it.cast.Service;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
+import cn.it.cast.Dao.StudentDao;
+import cn.it.cast.Dao.TeacherDao;
+import cn.it.cast.function.Comment;
+import cn.it.cast.function.Document;
+import cn.it.cast.function.Message;
+import cn.it.cast.function.News;
+import cn.it.cast.function.Video;
+import cn.it.cast.utils.PageModel;
+
+public class TeacherService {
+
+	public PageModel findNewsWithPage(int num) throws SQLException {
+		int currentPagenum = num;
+		int pageSize = 5;
+		TeacherDao teacherDao = new TeacherDao();
+		int totalRecord = teacherDao.getNewsNumber();
+		List<News> list = teacherDao.getNewsObject(5*(num-1),5);
+		System.out.println("list length is" + list.size());
+		PageModel pModel = new PageModel(currentPagenum, pageSize, totalRecord);
+		pModel.setList(list);
+		//前台通过url构造对象
+		pModel.setUrl("Teacher/TeacherServlet?method=scan_news");//设置url，通过pagemodel的属性构造url
+		return pModel;
+	}
+
+	public PageModel findVideoWithPage(int num) throws SQLException {
+		int currentPagenum = num;
+		int pageSize = 5;
+		TeacherDao teacherDao = new TeacherDao();
+		int totalRecord = teacherDao.getVideoNumber();
+		List<Video> list = teacherDao.getVideoObject(5*(num-1),5);
+		System.out.println("list length is" + list.size());
+		PageModel pModel = new PageModel(currentPagenum, pageSize, totalRecord);
+		pModel.setList(list);
+		//前台通过url构造对象
+		pModel.setUrl("Teacher/TeacherServlet?method=scan_news");//设置url，通过pagemodel的属性构造url
+		return pModel;
+	}
+
+	public PageModel findDocumentWithPage(int num) throws SQLException {
+		int currentPagenum = num;
+		int pageSize = 5;
+		TeacherDao teacherDao = new TeacherDao();
+		int totalRecord = teacherDao.getDocumentNumber();
+		List<Document> list = teacherDao.getDocumentObject(5*(num-1),5);
+		System.out.println("list length is" + list.size());
+		PageModel pModel = new PageModel(currentPagenum, pageSize, totalRecord);
+		pModel.setList(list);
+		//前台通过url构造对象
+		pModel.setUrl("Teacher/TeacherServlet?method=scan_news");//设置url，通过pagemodel的属性构造url
+		return pModel;
+	}
+
+	public void publish_news(String number, String topic, String content, int character, String name) throws SQLException {
+		TeacherDao teacherDao = new TeacherDao();
+		teacherDao.publish_news(number,topic,content,character,name);
+	}
+
+	public News show_news(String news_id) throws SQLException {
+		TeacherDao teacherDao = new TeacherDao();
+		return teacherDao.show_news(news_id);
+	}
+
+	public void publish_video(Map<String, String> map) throws SQLException {
+		// TODO Auto-generated method stub
+		TeacherDao teacherDao = new TeacherDao();
+		teacherDao.publish_video(map);
+	}
+
+	public Video show_video(String video_id) throws SQLException {
+		TeacherDao teacherDao = new TeacherDao();
+		return teacherDao.show_video(video_id);
+	}
+
+	public void publish_document(Map<String, String> map) throws SQLException {
+		TeacherDao teacherDao = new TeacherDao();
+		teacherDao.publish_document(map);
+	}
+
+	public Document download_document(String document_id) throws SQLException {
+		TeacherDao teacherDao = new TeacherDao();
+		return teacherDao.download_document(document_id);
+	}
+
+	public PageModel findMessageWithPage(int num) throws SQLException {
+		int currentPagenum = num;
+		int pageSize = 5;
+		TeacherDao teacherDao = new TeacherDao();
+		int totalRecord = teacherDao.getMessageNumber();
+		List<Message> list = teacherDao.getMessageObject(5*(num-1),5);
+		PageModel pModel = new PageModel(currentPagenum, pageSize, totalRecord);
+		pModel.setList(list);
+		pModel.setUrl("/Teacher/TeacherServlet?method=scan_Message");
+		return pModel;
+	}
+
+	public Message show_message(String message_id) throws SQLException {
+		TeacherDao teacherDao = new TeacherDao();
+		return teacherDao.show_message(message_id);
+	}
+
+	public List<Comment> getCommentByid(String message_id) throws SQLException {
+		TeacherDao teacherDao = new TeacherDao();
+		return teacherDao.getCommentByid(message_id);
+	}
+
+	public void publish_comment(String comment_username, String comment_usernumber, String comment_content,
+			String comment_messageid,int comment_character) throws SQLException {
+		TeacherDao teacherDao = new TeacherDao();
+		teacherDao.publish_comment(comment_username, comment_usernumber, comment_content, comment_messageid,comment_character);
+	}
+
+}

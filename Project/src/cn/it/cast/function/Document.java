@@ -1,0 +1,95 @@
+package cn.it.cast.function;
+
+public class Document {
+	private String document_id;
+	private String document_name;
+	private String document_oldattachment;
+	private String document_attachment;
+	private String document_uploadtime;
+	private String document_uploaduser;
+	private String document_uploadnumber;
+	private String document_pro;
+	private int document_character;
+	private int document_downloadnum;
+	private String document_savepath;
+	public String getDocument_name() {
+		return document_name;
+	}
+	public void setDocument_name(String document_name) {
+		this.document_name = document_name;
+	}
+	public String getDocument_attachment() {
+		return document_attachment;
+	}
+	public void setDocument_attachment(String document_attachment) {
+		this.document_attachment = document_attachment;
+	}
+	public String getDocument_uploadtime() {
+		document_uploadtime=document_uploadtime.replace(".0", "");
+		return document_uploadtime;
+	}
+	public void setDocument_uploadtime(String document_uploadtime) {
+		
+		this.document_uploadtime = document_uploadtime;
+	}
+	
+	public String getDocument_pro() {
+		return document_pro;
+	}
+	public void setDocument_pro(String document_pro) {
+		this.document_pro = document_pro;
+	}
+	public String getDocument_id() {
+		return document_id;
+	}
+	public void setDocument_id(String document_id) {
+		this.document_id = document_id;
+	}
+	public String getDocument_uploaduser() {
+		return document_uploaduser;
+	}
+	public void setDocument_uploaduser(String document_uploaduser) {
+		this.document_uploaduser = document_uploaduser;
+	}
+	public int getDocument_character() {
+		return document_character;
+	}
+	public void setDocument_character(int document_character) {
+		this.document_character = document_character;
+	}
+	public int getDocument_downloadnum() {
+		return document_downloadnum;
+	}
+	public void setDocument_downloadnum(int document_downloadnum) {
+		this.document_downloadnum = document_downloadnum;
+	}
+	public String getDocument_oldattachment() {
+		return document_oldattachment;
+	}
+	public void setDocument_oldattachment(String document_oldattachment) {
+		this.document_oldattachment = document_oldattachment;
+	}
+	public String getDocument_savepath() {
+		return document_savepath;
+	}
+	public void setDocument_savepath(String document_savepath) {
+		this.document_savepath = document_savepath;
+	}
+	public String getDocument_uploadnumber() {
+		return document_uploadnumber;
+	}
+	public void setDocument_uploadnumber(String document_uploadnumber) {
+		this.document_uploadnumber = document_uploadnumber;
+	}
+	@Override
+	public String toString() {
+		return "Document [document_id=" + document_id + ", document_name=" + document_name + ", document_oldattachment="
+				+ document_oldattachment + ", document_attachment=" + document_attachment + ", document_uploadtime="
+				+ document_uploadtime + ", document_uploaduser=" + document_uploaduser + ", document_uploadnumber="
+				+ document_uploadnumber + ", document_pro=" + document_pro + ", document_character="
+				+ document_character + ", document_downloadnum=" + document_downloadnum + ", document_savepath="
+				+ document_savepath + "]";
+	}
+	
+	
+}
